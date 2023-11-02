@@ -1,23 +1,25 @@
 package registration;
-import before_after.DriversSetup;
+import client.DriverRule;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import page_object_model.LoginPageModel;
-import page_object_model.MainPageModel;
-import page_object_model.RegisterPageModel;
+import model.RegisterPageModel;
+import static model.RegisterPageModel.REGISTRATION_PAGE_URL;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
-public class TestRegisterInvalidData extends DriversSetup {
+public class TestRegisterInvalidData {
+    @Rule
+    public DriverRule driverRule = new DriverRule();
     //поля формы регистрации
     private final String name;
     private final String email;
     private final String password;
-    private static final String REGISTRATION_PAGE_URL = "https://stellarburgers.nomoreparties.site/register";
-    private static final String LOGIN_PAGE_URL = "https://stellarburgers.nomoreparties.site/login";
+    private String currentUrl;
+
     public TestRegisterInvalidData(String name, String email, String password){
         this.name = name;
         this.email = email;
@@ -38,7 +40,6 @@ public class TestRegisterInvalidData extends DriversSetup {
         };
     }
 
-
     @DisplayName("Регистрация пользователя с Невалидными данными")
     @Description("Пользователь не может зарегистрироваться, если:" +
             "- не введено Имя," +
@@ -48,26 +49,13 @@ public class TestRegisterInvalidData extends DriversSetup {
             "- введен пароль менее 6 символов")
     @Test
     public void shouldNotRegisterUserWithInvalidData() {
-        MainPageModel objMainPage = new MainPageModel(driver);
-        objMainPage.open();
-        objMainPage.waitForLoadBasketSection();
-        objMainPage.loginAccountButtonClick(); //Кликнули по кнопке "Войти в аккаунт" на главной странице
-        String currentUrl1 = driver.getCurrentUrl(); // Получаем текущий Url, куда перешли после клика, и сравниваем с ожидаемым
-        assertEquals(LOGIN_PAGE_URL, currentUrl1);
-
-        LoginPageModel objLoginPage = new LoginPageModel(driver);
-        objLoginPage.waitForLoadLoginSection();
-        objLoginPage.registerButtonClick(); //Кликнули по кнопке "Зарегистрироваться" на логин странице
-        String currentUrl2 = driver.getCurrentUrl();
-        assertEquals(REGISTRATION_PAGE_URL, currentUrl2);
-
-        RegisterPageModel registrationPage = new RegisterPageModel(driver);
+        RegisterPageModel registrationPage = new RegisterPageModel(driverRule.getDriver());
         registrationPage.open();
         registrationPage.waitForLoadRegistrationPage();
         registrationPage.fillRegistrationForm(name, email, password);
         registrationPage.registerButtonClick();
-        String currentUrl3 = driver.getCurrentUrl(); // Получаем текущий Url, куда перешли после клика, и сравниваем с ожидаемым
-        assertEquals(REGISTRATION_PAGE_URL, currentUrl3); //Пользователь остался на странице регистрации
+        currentUrl = driverRule.getDriver().getCurrentUrl(); // Получаем текущий Url, куда перешли после клика, и сравниваем с ожидаемым
+        assertEquals(REGISTRATION_PAGE_URL, currentUrl); //Пользователь остался на странице регистрации
     }
 }
 
